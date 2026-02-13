@@ -1,0 +1,33 @@
+from flask import Flask, render_template, request
+import google.generativeai as genai
+
+app = Flask(__name__)
+
+# Replace with your API key
+genai.configure(api_key="YOUR_API_KEY")
+
+def get_joke():
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content("Tell me a short funny programmer joke.")
+    return response.text
+
+def recipe_generation(recipe_name):
+    model = genai.GenerativeModel("gemini-pro")
+    prompt = f"Generate a detailed blog style recipe for {recipe_name} with ingredients and steps."
+    response = model.generate_content(prompt)
+    return response.text
+
+@app.route("/", methods=["GET", "POST"])
+def home():
+    recipe = ""
+    joke = ""
+
+    if request.method == "POST":
+        recipe_name = request.form["recipe"]
+        recipe = recipe_generation(recipe_name)
+        joke = get_joke()
+
+    return render_template("index.html", recipe=recipe, joke=joke)
+
+if __name__ == "__main__":
+    app.run(debug=True)
